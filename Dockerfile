@@ -19,6 +19,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && apt-get update && apt-get install -
     libgd-dev \
     pkg-config \
     openssh-server \
+    libwebp-dev \
     && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir /var/run/sshd

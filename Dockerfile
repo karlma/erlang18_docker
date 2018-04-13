@@ -1,7 +1,7 @@
 FROM       ubuntu:trusty
 MAINTAINER Karl Ma
 
-#COPY sources.list /etc/apt/
+COPY sources.list /etc/apt/
 RUN export DEBIAN_FRONTEND=noninteractive && apt-get update && apt-get install -y \
     autoconf \
     automake \
@@ -19,8 +19,18 @@ RUN export DEBIAN_FRONTEND=noninteractive && apt-get update && apt-get install -
     libgd-dev \
     pkg-config \
     openssh-server \
-    libwebp-dev \
     && rm -rf /var/lib/apt/lists/*
+
+# Set timezone
+ENV TZ=Asia/Shanghai
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+# Set the locale
+RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
+    locale-gen
+ENV LANG en_US.UTF-8  
+ENV LANGUAGE en_US:en  
+ENV LC_ALL en_US.UTF-8
 
 RUN mkdir /var/run/sshd
 
@@ -29,11 +39,13 @@ RUN echo 'root:root' |chpasswd
 RUN sed -ri 's/^PermitRootLogin\s+.*/PermitRootLogin yes/' /etc/ssh/sshd_config
 RUN sed -ri 's/UsePAM yes/#UsePAM yes/g' /etc/ssh/sshd_config
 
-RUN wget http://erlang.org/download/otp_src_18.3.tar.gz && tar zxf otp_src_18.3.tar.gz && cd otp_src_18.3 && ./otp_build setup && make install
+#RUN wget http://erlang.org/download/otp_src_18.3.tar.gz && tar zxf otp_src_18.3.tar.gz && cd otp_src_18.3 && ./otp_build setup && make install
+COPY otp_src_18.3.tar.gz  /
+RUN tar zxf otp_src_18.3.tar.gz && cd otp_src_18.3 && ./otp_build setup && make install
+RUN rm -rf otp_src_18.3 otp_src_18.3.tar.gz
 
-
-VOLUME /usr/local/src/ejabberd
-WORKDIR /usr/local/src/ejabberd
+#VOLUME /usr/local/src/ejabberd
+#WORKDIR /usr/local/src/ejabberd
 
 EXPOSE 22
 
